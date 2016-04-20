@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8" />
+<head>
+<link rel="stylesheet" type="text/css" href="WeatherFilter.css">
+</head>
+
+<body>
+
+<script>
+// Function that gets the XML file when pressed
+	var x =null; 
+    var xx=null;
+    var locationVar=[];
+function getDoc() {
+	 var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+    if (xhttp.readyState == 4 && xhttp.status == 200) {
+    
+	var len=xhttp.responseXML;
+                for (var i = 0; i <len.getElementsByTagName("stationdata").length; i++) 
+                {
+                     xx=len.getElementsByTagName("stationdata")[i].getAttribute('location');
+                      
+                      if(!locationVar.contains(xx))
+                      {
+                        locationVar.push(xx);
+                      }
+                }	 
+				// Assign the drop down list to a variable
+				var dropDown = document.getElementById("cities");
+				// Loop through the array and append the locations to the dropDown variable
+				for (var j = 0; j < locationVar.length; j++)
+				{
+					dropDown[dropDown.length] = new Option(locationVar[j], locationVar[j]);
+					}
+            }
+     };
+     xhttp.open("GET", "weatherdata.xml", true);
+     xhttp.send();
+
+
+}
+
+
+//Function that clears everything selected (including the XML file that was pulled)
+function clearForm() {
+// Making it easier to access the max temp, min temp, rain, snow, generated div and cities variables
+var maxtemp = document.getElementById("maxtemp");
+var mintemp = document.getElementById("mintemp");
+var rain = document.getElementById("totalrain");
+var snow = document.getElementById("totalsnow");
+var generatedDataDiv = document.getElementById("generatedDataDiv");
+var cities = document.getElementById("cities");
+
+	// Unchecks all the checkboxes
+	maxtemp.checked = false;
+	mintemp.checked = false
+	rain.checked = false;
+	snow.checked = false;
+	// Clears what was generated in the div
+	generatedDataDiv.innerHTML = "";
+	// Clears the drop down list 
+	cities.innerHTML = "";
+}
+
+Array.prototype.contains = function(elem)
+{
+for (var i in this)
+{
+if (this[i] == elem) return true;
+}
+return false;
+}
+
+// Function that shows the data based on what the user put in 
+function generateData() {
+// Making it easier to access the max temp, min temp, rain and snow variables
+var maxtemp = document.getElementById("maxtemp");
+var mintemp = document.getElementById("mintemp");
+var rain = document.getElementById("totalrain");
+var snow = document.getElementById("totalsnow");
+var generatedData = document.getElementById("generatedDataDiv");
+var dropDownValue = document.getElementById("cities").value;
+
+// Check to see if something was checked. If not it throws an error
+if (maxtemp.checked == false && mintemp.checked == false && rain.checked == false && snow.checked == false)
+{
+	alert("Please select at least one checkbox");	
+	}
+	// If at least one of the checkboxes are checked it can output the data that the user wants
+else if (maxtemp.checked == true || mintemp.checked == true || rain.checked == true || snow.checked == true)
+{
+		// Displays the name of the city the user picked with the h3 tags and puts it in the userCity variable
+		var userCity = "<h3>" + dropDownValue + "</h3>";	
+		generatedData.innerHTML = userCity;
+
+		
+
+	}
+}
+
+</script>
+
+<form>
+<button type="button" onclick="getDoc()">Get weather data from XML file</button>
+<br><br>Available Cities:
+	<select id="cities"></select>
+    <br>
+	Maximum Temperature<input type = "checkbox" id="maxtemp"><br>
+	Minimum Temperature<input type = "checkbox" id="mintemp"><br>
+	Total Rain<input type = "checkbox" id="totalrain"><br>
+	Total Snow<input type = "checkbox" id="totalsnow"><br>
+    <p id = "demo"> </p>
+<button type="button" onclick="generateData()">Generate filtered data</button>
+<button type="button" onclick="clearForm()">Reset</button>
+</form>
+
+<div id="generatedDataDiv"></div>
+
+
+</body>
+</html>
