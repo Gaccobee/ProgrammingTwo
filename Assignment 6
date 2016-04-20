@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8" />
+<body>
+<script>
+var xmlhttp;
+var xml=null;
+var query =null;
+
+function clearForm() {
+// Clearing the values when the user hits the "Reset" button
+document.getElementById("citytextbox").value = "";
+document.getElementById("yeartextbox").value = "";
+document.getElementById("monthtextbox").value = "";
+document.getElementById("daytextbox").value = "";
+document.getElementById("soapchbox").checked = false;
+document.getElementById("outputarea").value = "";
+xmlhttp=null;
+}
+
+function generateResponse() {
+	// Variables to create the timestamp that appears before every new line in the console box
+	var date = new Date();
+	var current_date = date.getDate()
+	var current_month = date.getMonth();
+	var current_year = date.getFullYear();
+	current_month++;
+	var current_hour = date.getHours();
+	var current_minute = date.getMinutes();
+	var current_second = date.getSeconds();
+	// fullDate is the full time stamp made up from the variables above ^
+	var fullDate = ("[" + current_year + "/" + current_month + "/" + current_date + " " + current_hour + ":" + current_minute + ":" + current_second +"] " ); 	
+	
+	var yeartextbox = document.getElementById("yeartextbox");
+	var monthtextbox = document.getElementById("monthtextbox");
+	var daytextbox = document.getElementById("daytextbox");
+	var citytextbox = document.getElementById("citytextbox");
+	var weatherdatatype = document.getElementById("weatherdatatype");
+	var soapchbox = document.getElementById("soapchbox");
+	// Variables for the values
+	var year = yeartextbox.value; 
+	var month = monthtextbox.value; 
+	var day = daytextbox.value; 
+	var city = citytextbox.value;
+
+	// Getting rid of whitespace with .trim();
+	var yearTrimmed = year.trim(); var monthTrimmed = month.trim(); var dayTrimmed = day.trim(); var cityTrimmed = city.trim();
+
+	// Turning city to the proper format if the user did not enter it properly
+	// Turning the city value to lowercase
+		var lowerCity = cityTrimmed.toLowerCase();
+  	// Making the first letter in city Uppercase to match the XML file location value	
+		var formattedCity = lowerCity.substr(0, 1).toUpperCase() + lowerCity.substr(1);
+
+	// To get the data that the user wants
+	 query=xml.querySelectorAll("stationdata[location=\"" + formattedCity + "\"][weatherdate=\"" + yearTrimmed + "-" +monthTrimmed + "-" + dayTrimmed + "\"]");
+
+// If the soap check box is not checked, output standard response
+		if (soapchbox.checked == false)
+		{
+			// If there is valid data to display, because x != 0 
+			if(query.length!=0)
+			{
+			var value1=query[0].getElementsByTagName(document.getElementById("weatherdatatype").value)[0].firstChild.nodeValue;
+			// If user wants max temp or min temp, output standard response with C units
+			if (weatherdatatype.value == "mintemp" || weatherdatatype.value == "maxtemp")
+			{
+			document.getElementById("outputarea").value += fullDate + "The " +  weatherdatatype.value + " in " + formattedCity + " on the date " + yearTrimmed +"/" + monthTrimmed +"/" + dayTrimmed + " was " + value1 + " C" + "\n";
+			}
+			// If user wants total rain, output standard response with mm units
+			if (weatherdatatype.value == "totalrain")
+			{
+				document.getElementById("outputarea").value += fullDate + "The " +  weatherdatatype.value + " in " + formattedCity + " on the date " + yearTrimmed +"/" + monthTrimmed +"/" + dayTrimmed + " was " + value1 + " mm" + "\n";
+				}
+			// If user wants total snow, output standard response with cm units
+			if (weatherdatatype.value == "totalsnow")
+			{
+				document.getElementById("outputarea").value += fullDate + "The " +  weatherdatatype.value + " in " + formattedCity + " on the date " + yearTrimmed +"/" + monthTrimmed +"/" + dayTrimmed + " was " + value1 + " cm" + "\n";
+				}
+
+			}
+			// If query == 0 it means that there is no valid data to display 
+			else{
+				document.getElementById('outputarea').value += fullDate+ "The "+weatherdatatype.value+" was not found in "+formattedCity +" on the date "+yearTrimmed +"/" + monthTrimmed +"/" + dayTrimmed+"\n";
+			 
+			} 
+			}
+			
+		// If soap check box is checked, output soap response
+		if (soapchbox.checked == true)
+		{    
+		var unit=null; 
+			if(query.length!=0)
+			{
+               // Declaring that the units should be C (Celcius) if the user wants the temperature
+			    if (weatherdatatype.value == "mintemp" || weatherdatatype.value == "maxtemp")
+			{     unit="C";
+			}    
+				// Declaring that the units should be cm (centimeters) if the user wants total amount of snow
+			else if (weatherdatatype.value == "totalsnow")
+			{
+				unit="cm";
+			}
+				// Declaring that the units should be mm (millimeters) if the user wants total amount of rain 
+			else
+			{
+				unit="mm"
+			}
+					// Proper SOAP response
+					var dateNode = yearTrimmed + "/" + monthTrimmed + "/" + dayTrimmed;
+					var weatherDataNode = document.createTextNode(weatherdatatype.value);
+					var weatherDateNode = document.createTextNode(dateNode);
+					var weatherValueNode = document.createTextNode(query[0].getElementsByTagName(document.getElementById("weatherdatatype").value)[0].firstChild.nodeValue);
+					var weatherUnitNode = document.createTextNode(unit);
+					var weatherLocationNode = document.createTextNode(formattedCity);
+					
+					// Being able to create the tree
+					var doc = document.implementation.createDocument("", "", null);
+				
+					// Main header -- <soap:Envelope>
+					var mainElem = doc.createElement("soap:Envelope");
+					mainElem.setAttribute("xmlns:soap", "http://www.w3.org/2003/05/soap-envelope/");
+					mainElem.setAttribute("soap:encodingStyle", "http://www.w3.org/2003/05/soap-encoding");
+				
+					var soapHeaderElem = doc.createElement("soap:Header");
+					
+					var nameElem = doc.createElement("w:Name");
+					nameElem.setAttribute("xmlns:w", "http://climate.weather.gc.ca/weatherdata");
+					nameElem.appendChild(weatherDataNode);
+					soapHeaderElem.appendChild(nameElem);
+					
+					var soapBodyElem = doc.createElement("soap:Body");
+					
+					var dataElem = doc.createElement("w:Data");
+					dataElem.setAttribute("xmlns:w", "http://climate.weather.gc.ca/weatherdata");
+					
+					var weatherDateElem = doc.createElement("w:weatherdate");
+					weatherDateElem.appendChild(weatherDateNode);
+					dataElem.appendChild(weatherDateElem);
+					
+					
+					var locationElem = doc.createElement("w:location");
+					locationElem.appendChild(weatherLocationNode);
+					dataElem.appendChild(locationElem);
+				
+					var valueElem = doc.createElement("w:value");
+					valueElem.appendChild(weatherValueNode);
+					dataElem.appendChild(valueElem);
+
+					var unitsElem = doc.createElement("w:units");
+					unitsElem.appendChild(weatherUnitNode);					
+					dataElem.appendChild(unitsElem);
+				
+					soapBodyElem.appendChild(dataElem);
+				
+					// Appending soapElem and soapBodyElem to the main Element; appending mainElem to the doc.
+					mainElem.appendChild(soapHeaderElem);
+					mainElem.appendChild(soapBodyElem);
+					doc.appendChild(mainElem);
+					
+					// Serializing it so we can display it on the screen as the sXML variable
+					var toSerialize = new XMLSerializer();
+					var xmlToDisplay = toSerialize.serializeToString(doc);
+					
+					
+					
+					// Displaying the timestamp; Displaying SOAP response that we just created above ^
+					document.getElementById("outputarea").value += fullDate + " " + xmlToDisplay +"\n";
+			}
+			else
+			{
+				// Error SOAP response -- Repeating what was just done above (pretty much)
+				// Creating textNodes
+				var faultNode = document.createTextNode("SOAP:Client");
+				var faultString = document.createTextNode("Client Error");
+				var weatherFaultNode = document.createTextNode("The " + weatherdatatype.value + " was not found in " + formattedCity + " on the date " + yearTrimmed + "/" + monthTrimmed + "/" + dayTrimmed);
+			
+				var doc = document.implementation.createDocument("", "", null);
+				var mainElem = doc.createElement("soap:Envelope");
+				
+				var soapElem = doc.createElement("xmlns:soap");
+					mainElem.setAttribute("xmlns:soap", "http://www.w3.org/2003/05/soap-envelope/");
+					mainElem.setAttribute("soap:encodingStyle", "http://www.w3.org/2003/05/soap-encoding");
+				
+				var soapBodyElem = doc.createElement("soap:Body");
+				
+				var soapFaultElem = doc.createElement("soap:Fault");
+					soapBodyElem.appendChild(soapFaultElem);	
+				
+				var faultCodeElem = doc.createElement("soap:faultcode");
+					faultCodeElem.appendChild(faultNode);
+					soapFaultElem.appendChild(faultCodeElem);
+					
+				var faultStringElem = doc.createElement("soap:faultstring");
+					faultStringElem.appendChild(faultString);
+					soapFaultElem.appendChild(faultStringElem);
+				
+				var soapDetailElem = doc.createElement("soap:detail");
+					soapFaultElem.appendChild(soapDetailElem);
+				
+				var weatherFaultElem = doc.createElement("w:weatherfaultdetails");
+					weatherFaultElem.setAttribute("xmlns:w", "http://climate.weather.gc.ca/weatherdata");
+					soapDetailElem.appendChild(weatherFaultElem);
+				
+				var messageElem = doc.createElement("w:message");
+					messageElem.appendChild(weatherFaultNode);
+					weatherFaultElem.appendChild(messageElem);
+				
+					//mainElem.appendChild(soapElem);
+					mainElem.appendChild(soapBodyElem);
+					
+					doc.appendChild(mainElem);
+					
+					var toSerialize = new XMLSerializer();
+					var xmlToDisplay = toSerialize.serializeToString(doc);
+						
+					document.getElementById("outputarea").value += fullDate + " " + xmlToDisplay +"\n";
+				 }
+	}	
+}
+// Function to load the XML file when the user clicks the "Load Data" button
+function loadData() {
+if (window.XMLHttpRequest)
+		  {
+		  	// For Chrome, IE7+, Firefox, Safari, Opera	
+		  xmlhttp=new XMLHttpRequest();
+		  }
+		else
+		  {
+			// For IE5 and IE6
+		  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+		  }
+xmlhttp.onreadystatechange = function() {
+	// If all is good
+	if (xmlhttp.readyState == 4 && xmlhttp.status == 200)
+	{
+		xml=xmlhttp.responseXML;
+		outputarea.value += fullDate + "The data file weatherdata.xml has been loaded \n";	
+		}
+	};
+xmlhttp.open("GET", "weatherdata.xml", true);
+xmlhttp.send();
+
+var outputarea = document.getElementById("outputarea");
+// Variables to create the timestamp that appears before every new line in the console box
+var date = new Date();
+	var current_date = date.getDate();
+	var current_month = date.getMonth();
+	var current_year = date.getFullYear();
+	current_month++;
+	var current_hour = date.getHours();
+	var current_minute = date.getMinutes();
+	var current_second = date.getSeconds();
+	// Full timestamp
+	var fullDate = ("[" + current_year + "/" + current_month + "/" + current_date + " " + current_hour + ":" + current_minute + ":" + current_second +"] " ); 
+}
+</script>
+
+<form>
+<button type="button" id="loaddatabutton" onclick="loadData()">Load Data</button>
+<button type="button" id="sendcommandbutton" onclick="generateResponse()">Generate Response</button>
+<button type="button" id="resetbutton" onclick="clearForm()">Reset</button><br>
+<br>
+Year: <input type="text" id="yeartextbox" size="15"><br>
+Month: <input type="text" id="monthtextbox" size="15"> (two digits are required)<br>
+Day: <input type="text" id="daytextbox" size="15"> (two digits are required)<br>
+City: <input type="text" id="citytextbox" size="50"> (case insensitive)<br>
+Data: 
+<select id="weatherdatatype">
+	<option value="mintemp">Minimum Temperature</option>
+	<option value="maxtemp">Maximum Temperature</option>
+	<option value="totalrain">Total Rain</option>
+	<option value="totalsnow">Total Snow</option>
+</select><br><br>
+Generate SOAP Response
+<input type="checkbox" id="soapchbox"> 
+<br><br>
+<b>Console</b><br>
+<textarea id="outputarea" rows="10" cols="60"></textarea><br>
+</form>
+</body>
+</html>
