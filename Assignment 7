@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<script>
+
+function generateManifest() {
+	// Creating variables to be able to use the values more easily when I trim them
+	var productidtextbox = document.getElementById("productidtextbox").value;
+	var productidchbox = document.getElementById("productidchbox");
+	var versiontextbox = document.getElementById("versiontextbox").value;
+	var sharepointminversiontextbox = document.getElementById("sharepointminversiontextbox").value;
+	var nametextbox = document.getElementById("nametextbox").value;
+	var titletextbox = document.getElementById("titletextbox").value;
+	var startpagetextbox = document.getElementById("startpagetextbox").value;
+	var culturenametextbox = document.getElementById("culturenametextbox").value;
+	var scopetextbox = document.getElementById("scopetextbox").value;
+	var righttextbox = document.getElementById("righttextbox").value;
+	var clientidtextbox = document.getElementById("clientidtextbox").value;
+	var outputarea = document.getElementById("outputarea").value;
+
+	// Trims off the leading and trailing whitespace for the textbox values and assigns a new variable to the values
+	var productidtextboxTrimmed = productidtextbox.trim(); var versiontextboxTrimmed = versiontextbox.trim();
+	 var sharepointminversiontextboxTrimmed = sharepointminversiontextbox.trim();
+	var nametextboxTrimmed = nametextbox.trim(); var titletextboxTrimmed = titletextbox.trim(); var startpagetextboxTrimmed = startpagetextbox.trim();
+	var culturenametextboxTrimmed = culturenametextbox.trim(); var scopetextboxTrimmed = scopetextbox.trim(); var righttextboxTrimmed = righttextbox.trim(); var clientidtextboxTrimmed = clientidtextbox.trim(); var outputareaTrimmed = outputarea.trim();
+
+	// Assigning Regex to variables so it's easier to use them when needed
+	var productIDRegex = /(\{[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}\})|([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})/;
+	var versionRegex = /\d{1,4}\.\d{1,4}\.\d{1,4}\.\d{1,4}/;
+	var urlRegex_test = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+	
+	var urlRegex = /((http|https|www):\/\/)/;
+	
+	//var urlRegex3 = ^(http|https|ftp)://.*$;
+	
+	var str = ['.com', '.ca', '.org', '.net']; 
+	
+	if(productidchbox.checked == false){
+		if (productIDRegex.test(productidtextboxTrimmed) == false)
+		{
+			alert("Invalid: Product ID ");
+			return;
+		}
+	}
+	else
+	{
+		// Generating new Product ID
+		var char1 = "";
+		var char2 = "";
+		var char3 = "";
+		var char4 = "";
+		var char5 = "";
+		var arrayOfValues = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f','A', 'B', 'C', 'D', 'E', 'F'];
+		// Loop through 8 times for the first set of characters
+		for(var i=0; i<8; i++)
+		{
+			rand = Math.round(Math.random() * (arrayOfValues.length-1));
+			char1 += arrayOfValues[rand];
+		}
+		// Loop through 4 times for the second set of characters
+		for(var i=0; i<4; i++)
+		{
+			rand = Math.round(Math.random() * (arrayOfValues.length-1));
+			char2 += arrayOfValues[rand];
+		}
+		// Loop through 4 times for the third set of characters
+		for(var i=0; i<4; i++)
+		{
+			rand = Math.round(Math.random() * (arrayOfValues.length-1));
+			char3 += arrayOfValues[rand];
+		}
+		// Loop through 4 times for the fourth set of characters
+		for(var i=0; i<4; i++)
+		{
+			rand = Math.round(Math.random() * (arrayOfValues.length-1));
+			char4 += arrayOfValues[rand];
+		}
+		// Loop through 12 times for the fifth set of characters
+		for(var i=0; i<12; i++)
+		{
+			rand = Math.round(Math.random() * (arrayOfValues.length-1));
+			char5 += arrayOfValues[rand];
+		}
+		// Assigning the new Product ID
+		productidtextboxTrimmed = "{" + char1 + "-" + char2 + "-" + char3 + "-" + char4 + "-" + char5 + "}";
+		
+	}
+	// Continue with validation
+	if (versionRegex.test(versiontextboxTrimmed) == false)
+	{
+		alert("Invalid: Version ");
+		return;
+	}
+
+	if (versionRegex.test(sharepointminversiontextboxTrimmed) == false)
+	{
+		alert("Invalid: Sharepoint Minimum Version");
+		return;
+		}
+	
+	if (nametextboxTrimmed.length > 64 || nametextboxTrimmed.length < 1)
+	{
+		alert("Invalid: Name");
+		return;
+		}
+	
+	if (titletextboxTrimmed.length > 256 || titletextboxTrimmed.length < 1)
+	{
+			alert("Invalid: Title");
+			return;
+		}
+		
+	if (startpagetextboxTrimmed.length > 2083 || startpagetextboxTrimmed.length < 1 || urlRegex.test(startpagetextboxTrimmed) == false)
+	{
+		alert("Invalid: Start Page");
+		return;
+		}
+	
+	if (culturenametextboxTrimmed.length > 256 || culturenametextboxTrimmed.length < 1)
+	{
+		alert("Invalid: Culture Name");
+		return;
+		}
+	
+	if (scopetextboxTrimmed.length > 2083 || scopetextboxTrimmed.length < 1 || urlRegex.test(scopetextboxTrimmed) == false)
+	{
+			alert("Invalid: Scope");	
+			return;
+		}
+	
+	if (righttextboxTrimmed.length > 256 || righttextboxTrimmed.length < 1)
+	{
+		alert("Invalid: Right");	
+		return;
+		}
+	
+	if (productIDRegex.test(clientidtextboxTrimmed) == false)
+	{
+		alert("Invalid: Client ID");
+		return;	
+		}
+	// If it all works
+	else 
+	{
+			// Create text nodes
+			var productIDNode = document.createTextNode(productidtextboxTrimmed);
+			var versionNode = document.createTextNode(versiontextboxTrimmed);
+			var sharepointNode = document.createTextNode(sharepointminversiontextboxTrimmed);
+			var nameNode = document.createTextNode(nametextboxTrimmed);
+			var startNode = document.createTextNode(startpagetextboxTrimmed);
+			var titleNode = document.createTextNode(titletextboxTrimmed);
+			var cultureNode = document.createTextNode(culturenametextboxTrimmed);
+			var scopeNode = document.createTextNode(scopetextboxTrimmed);
+			var rightNode = document.createTextNode(righttextboxTrimmed);
+			var clientNode = document.createTextNode(clientidtextboxTrimmed);
+		
+			// Create Tree
+			var doc = document.implementation.createDocument("", "",  null);
+		
+			var mainElem = doc.createElement("App");
+			mainElem.setAttribute("xmlns", "http://schemas.microsoft.com/sharepoint/2012/app/manifest");
+			mainElem.setAttribute("ProductID", productIDNode.nodeValue);
+			mainElem.setAttribute("Version", versionNode.nodeValue);
+			mainElem.setAttribute("SharePointMinVersion", sharepointNode.nodeValue);
+			mainElem.setAttribute("Name", nameNode.nodeValue);
+			
+			var propertiesElem = doc.createElement("Properties");
+			
+			var titleHeader = doc.createElement("Title");
+			titleHeader.appendChild(titleNode); 
+			propertiesElem.appendChild(titleHeader);
+			
+			var startPageHeader = doc.createElement("StartPage");
+			startPageHeader.appendChild(startNode);
+			propertiesElem.appendChild(startPageHeader);
+			
+			var supportedLocalesHeader = doc.createElement("SupportedLocales");
+			
+			var supportedLocaleHeader = doc.createElement("SupportedLocale");
+			supportedLocaleHeader.setAttribute("CultureName",cultureNode.nodeValue);
+			supportedLocalesHeader.appendChild(supportedLocaleHeader);
+			propertiesElem.appendChild(supportedLocalesHeader);
+			
+			var appPermissionsRequestHeader = doc.createElement("AppPermissionRequests");
+			
+			var appPermissionsRequestScopeHeader = doc.createElement("AppPermissionRequest");
+			appPermissionsRequestScopeHeader.setAttribute("Scope", scopeNode.nodeValue);
+			appPermissionsRequestScopeHeader.setAttribute("Right", rightNode.nodeValue);
+			appPermissionsRequestHeader.appendChild(appPermissionsRequestScopeHeader);
+			propertiesElem.appendChild(appPermissionsRequestHeader);
+			
+			var appPrincipalHeader = doc.createElement("AppPrincipal");
+			
+			var remoteHeader = doc.createElement("RemoteWebApplication");
+			remoteHeader.setAttribute("ClientId", clientNode.nodeValue);
+			appPrincipalHeader.appendChild(remoteHeader);
+			
+			// Appending
+			doc.appendChild(mainElem);
+			mainElem.appendChild(propertiesElem);
+			mainElem.appendChild(appPermissionsRequestHeader);
+			mainElem.appendChild(appPrincipalHeader);
+			
+			// Serializing it and being able to actually use the tree
+			var toSerialize = new XMLSerializer();
+			var xmlToDisplay = toSerialize.serializeToString(doc);
+		
+			// Displaying the DOM tree to the outputarea
+			document.getElementById("outputarea").value = xmlToDisplay;
+		
+			return;	
+		}
+}
+
+function clearForm() {
+	document.getElementById("productidtextbox").value = "";
+	document.getElementById("productidchbox").checked = false;
+	document.getElementById("versiontextbox").value = "";
+	document.getElementById("sharepointminversiontextbox").value = "";
+	document.getElementById("nametextbox").value = "";
+	document.getElementById("titletextbox").value = "";
+	document.getElementById("startpagetextbox").value = "";
+	document.getElementById("culturenametextbox").value = "";
+	document.getElementById("scopetextbox").value = "";
+	document.getElementById("righttextbox").value = "";
+	document.getElementById("clientidtextbox").value = "";
+	document.getElementById("outputarea").value = "";
+}
+
+</script>
+
+<form>
+<button type="button" id="generatemanifestbutton" onclick="generateManifest()">Generate Manifest</button>
+<button type="button" id="resetbutton" onclick="clearForm()">Reset</button>
+<br>
+<br>
+Enter all values without quotes
+<br>
+<br>
+<b>App Attributes</b><br>
+Product ID: <input type="text" id="productidtextbox" size="50"><br>
+Automatically Generate Product ID
+<input type="checkbox" id="productidchbox"><br>
+Version: <input type="text" id="versiontextbox" size="15"><br>
+SharePoint Minimum Version: <input type="text" id="sharepointminversiontextbox" size="15"><br>
+Name: <input type="text" id="nametextbox" size="50">
+<br>
+<br>
+<b>Properties</b><br>
+Title: <input type="text" id="titletextbox" size="50"><br>
+Start Page: <input type="text" id="startpagetextbox" size="50"><br>
+Culture Name: <input type="text" id="culturenametextbox" size="15">
+<br>
+<br>
+<b>AppPermissionRequests</b><br>
+Scope: <input type="text" id="scopetextbox" size="50"><br>
+Right: <input type="text" id="righttextbox" size="15">
+<br>
+<br>
+<b>AppPrincipal</b><br>
+Client ID: <input type="text" id="clientidtextbox" size="50"><br> 
+
+<br><br>
+<b>Generated Manifest</b><br>
+<textarea id="outputarea" rows="10" cols="60"></textarea><br>
+</form>
+</body>
+</html>
